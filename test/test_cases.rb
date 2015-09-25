@@ -8,6 +8,7 @@ module Breaker
 
     def setup
       Breaker.repo = repo
+      Rails.clear_cache
     end
 
     def test_new_fuses_start_off_clean
