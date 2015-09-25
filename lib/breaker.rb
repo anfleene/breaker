@@ -36,10 +36,24 @@ module Breaker
     def repo=(repo)
       @repo = repo
     end
+
+    def callback(name, &block)
+      define_singleton_method name do |circuit|
+        block.call(circuit)
+      end
+    end
+
+    def fire_callback(callback_name, circuit)
+      send(callback_name, circuit) if respond_to?(callback_name)
+    end
   end
 
   class Circuit
     attr_accessor :fuse
+
+    def callback(callback_name)
+      Breaker.fire_callback(callback_name, self)
+    end
 
     def initialize(fuse)
       @fuse = fuse
@@ -50,14 +64,18 @@ module Breaker
     end
 
     def open(clock = Time.now)
+      callback(:before_open)
       fuse.state = :open
       fuse.retry_threshold = clock + retry_timeout
+      callback(:after_open)
     end
 
     def close
+      callback(:before_close)
       fuse.failure_count = 0
       fuse.state = :closed
       fuse.retry_threshold = nil
+      callback(:after_close)
     end
 
     def ==(other)
