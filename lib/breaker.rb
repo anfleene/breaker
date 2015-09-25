@@ -51,7 +51,7 @@ module Breaker
 
     def open(clock = Time.now)
       fuse.state = :open
-      fuse.retry_threshold = clock + retry_timeout
+      fuse.retry_threshold = clock + fuse.retry_timeout
     end
 
     def close
@@ -70,30 +70,18 @@ module Breaker
     alias down? open?
 
     def closed?
-      fuse.state == :closed
+      [:closed,:disabled].include?(fuse.state)
     end
     alias up? closed?
 
-    def retry_timeout
-      fuse.retry_timeout
-    end
-
-    def failure_count
-      fuse.failure_count
-    end
-
-    def failure_threshold
-      fuse.failure_threshold
-    end
-
-    def timeout
-      fuse.timeout
+    def enabled?
+      fuse.state != :disabled
     end
 
     def run(clock = Time.now)
       if closed? || half_open?(clock)
         begin
-          result = Timeout.timeout timeout do
+          result = Timeout.timeout fuse.timeout do
             yield
           end
 
@@ -102,7 +90,7 @@ module Breaker
           end
 
           result
-        rescue => ex
+        rescue fuse.breaker_error_class => ex
           fuse.failure_count = fuse.failure_count + 1
 
           open clock if tripped?
@@ -116,7 +104,7 @@ module Breaker
 
     private
     def tripped?
-      fuse.failure_count > fuse.failure_threshold
+      enabled? && fuse.failure_count > fuse.failure_threshold
     end
 
     def half_open?(clock)
