@@ -1,6 +1,6 @@
 require_relative 'test_helper'
 require_relative 'test_cases'
-require 'breaker/rails_cache/repo'
+require 'breaker/in_memory_repo'
 
 class AcceptanceTest < MiniTest::Unit::TestCase
   include Breaker::TestCases
@@ -8,8 +8,8 @@ class AcceptanceTest < MiniTest::Unit::TestCase
   attr_reader :fuse, :repo
 
   def setup
-    @repo = Breaker::RailsCache::Repo.new
-    @fuse = Breaker::RailsCache::Fuse.new :test
+    @repo = Breaker::InMemoryRepo.new
+    @fuse = Breaker::InMemoryRepo::Fuse.new :test
     super
   end
 end
