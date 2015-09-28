@@ -112,8 +112,3 @@ module Breaker
     end
   end
 end
-
-require_relative 'breaker/in_memory_repo'
-require_relative 'breaker/test_cases'
-
-Breaker.repo = Breaker::InMemoryRepo.new
