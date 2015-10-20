@@ -1,16 +1,15 @@
 require_relative 'test_helper'
+require_relative 'test_cases'
+require 'breaker/in_memory_repo'
 
 class AcceptanceTest < MiniTest::Unit::TestCase
   include Breaker::TestCases
-
-  InMemoryFuse = Struct.new :state, :failure_count, :retry_threshold,
-    :failure_threshold, :retry_timeout, :timeout
 
   attr_reader :fuse, :repo
 
   def setup
     @repo = Breaker::InMemoryRepo.new
-    @fuse = InMemoryFuse.new :closed, 0, 1, 3, 15, 10
+    @fuse = Breaker::InMemoryRepo::Fuse.new :test
     super
   end
 end
