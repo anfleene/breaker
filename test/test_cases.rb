@@ -1,5 +1,7 @@
 module Breaker
   module TestCases
+    CircuitClosedError = Class.new(StandardError)
+    CircuitOpenError = Class.new(StandardError)
     def setup
       Breaker.repo = @repo
     end
@@ -174,6 +176,32 @@ module Breaker
       assert Breaker.down?('test')
       refute Breaker.closed?('test')
       refute Breaker.up?('test')
+    end
+
+    def test_breaker_callbacks
+      Breaker.callback(:after_close) do
+        raise CircuitClosedError
+      end
+      Breaker.callback(:after_open) do
+        raise CircuitOpenError
+      end
+
+      circuit = Breaker.circuit 'test'
+      assert_raises CircuitClosedError do
+        circuit.close
+      end
+      assert_raises CircuitOpenError do
+        circuit.open
+      end
+
+      # Reset callbacks
+      Breaker.callback(:after_close) do
+        # Do nothing
+      end
+      Breaker.callback(:after_open) do
+        # Do nothing
+      end
+
     end
   end
 end
