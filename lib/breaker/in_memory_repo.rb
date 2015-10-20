@@ -1,6 +1,6 @@
 module Breaker
   class InMemoryRepo
-    Fuse = Struct.new :name, :state, :failure_threshold, :retry_timeout, :timeout, :failure_count, :retry_threshold do
+    Fuse = Struct.new :name, :state, :failure_threshold, :retry_timeout, :timeout, :failure_count, :retry_threshold, :breaker_error_class do
       def initialize(*args)
         super
 
@@ -10,6 +10,7 @@ module Breaker
 
         self.state ||= :closed
         self.failure_count ||= 0
+        self.breaker_error_class ||= Timeout::Error
       end
 
       def ==(other)
@@ -18,6 +19,18 @@ module Breaker
     end
 
     attr_reader :store
+
+    def self.config
+      {
+        failure_threshold: 10,
+        retry_timeout: 60,
+        timeout: 5,
+        breaker_error_class: Timeout::Error,
+        failure_count: 0,
+        failure_count_ttl: 300,
+        state: :closed,
+      }
+    end
 
     def initialize
       @store = []
