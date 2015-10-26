@@ -1,16 +1,17 @@
 module Breaker
   class InMemoryRepo
-    Fuse = Struct.new :name, :state, :failure_threshold, :retry_timeout, :timeout, :failure_count, :retry_threshold, :breaker_error_class do
+    Fuse = Struct.new :name, :state, :failure_threshold, :retry_timeout, :timeout, :half_open_timeout, :failure_count, :retry_threshold, :breaker_error_class do
       def initialize(*args)
         super
+        config = InMemoryRepo.config
+        self.failure_threshold ||= config[:failure_threshold]
+        self.retry_timeout ||= config[:retry_timeout]
+        self.timeout ||= config[:timeout]
+        self.half_open_timeout ||= config[:half_open_timeout]
 
-        self.failure_threshold ||= 10
-        self.retry_timeout ||= 60
-        self.timeout ||= 5
-
-        self.state ||= :closed
-        self.failure_count ||= 0
-        self.breaker_error_class ||= Timeout::Error
+        self.state ||= config[:state]
+        self.failure_count ||= config[:failure_count]
+        self.breaker_error_class ||=  config[:breaker_error_class]
       end
 
       def ==(other)
@@ -25,6 +26,7 @@ module Breaker
         failure_threshold: 10,
         retry_timeout: 60,
         timeout: 5,
+        half_open_timeout: 0.5,
         breaker_error_class: Timeout::Error,
         failure_count: 0,
         failure_count_ttl: 300,

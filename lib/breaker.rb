@@ -97,9 +97,12 @@ module Breaker
     end
 
     def run(clock = Time.now)
-      if closed? || half_open?(clock)
+      half_open = half_open?(clock)
+      timeout = fuse.timeout
+      timeout = fuse.half_open_timeout if half_open
+      if closed? || half_open
         begin
-          result = Timeout.timeout fuse.timeout do
+          result = Timeout.timeout timeout do
             yield
           end
 
