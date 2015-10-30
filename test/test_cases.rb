@@ -109,13 +109,13 @@ module Breaker
     end
 
     def test_counts_timeouts_as_trips
-      circuit = Breaker.circuit 'test', retry_timeout: 15, timeout: 0.01
+      circuit = Breaker.circuit 'test', retry_timeout: 15, timeout: 0.05
       fuse = circuit.fuse
       assert circuit.closed?
 
       assert_raises TimeoutError do
         circuit.run do
-          sleep fuse.timeout * 2
+          sleep fuse.timeout * 10
         end
       end
     end
