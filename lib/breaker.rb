@@ -1,5 +1,5 @@
 require "breaker/version"
-require 'timeout'
+require 'sane_timeout'
 
 module Breaker
   CircuitOpenError = Class.new RuntimeError
@@ -102,7 +102,7 @@ module Breaker
       timeout = fuse.half_open_timeout if half_open
       if closed? || half_open
         begin
-          result = Timeout.timeout timeout do
+          result = SaneTimeout.timeout timeout do
             yield
           end
 
