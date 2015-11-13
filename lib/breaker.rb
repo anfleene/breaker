@@ -119,7 +119,7 @@ module Breaker
           raise ex
         end
       else
-        raise Breaker::CircuitOpenError, "Cannot run code while #{name} is open!"
+        raise Breaker::CircuitOpenError, "Refusing to run code while circuit #{name} is open"
       end
     end
 
