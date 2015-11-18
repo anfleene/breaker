@@ -106,15 +106,13 @@ module Breaker
             yield
           end
 
-          if half_open?(clock)
-            close
-          end
+          close if half_open
 
           result
         rescue fuse.breaker_error_class => ex
           fuse.failure_count = fuse.failure_count + 1
 
-          open clock if tripped?
+          open clock if half_open || tripped?
 
           raise ex
         end
