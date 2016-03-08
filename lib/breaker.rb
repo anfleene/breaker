@@ -3,9 +3,12 @@ require 'sane_timeout'
 
 module Breaker
   CircuitOpenError = Class.new RuntimeError
+  MissingRepoError = Class.new RuntimeError
 
   class << self
     def circuit(name, options = {})
+      raise MissingRepoError, "Missing Breaker Repo: example usage 'Breaker.repo = Breaker::InMemoryRepo.new'" unless repo
+
       fuse = repo.upsert options.merge(name: name)
 
       circuit = Circuit.new fuse

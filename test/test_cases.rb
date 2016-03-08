@@ -6,6 +6,13 @@ module Breaker
       Breaker.repo = @repo
     end
 
+    def test_repo_required
+      Breaker.repo = nil
+      assert_raises Breaker::MissingRepoError do
+        Breaker.circuit 'test'
+      end
+    end
+
     def test_new_fuses_start_off_clean
       circuit = Breaker.circuit 'test'
       fuse = circuit.fuse
